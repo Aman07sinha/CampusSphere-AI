@@ -1,9 +1,11 @@
+const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
     userId: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
+      default: null, 
       trim: true,
     },
 
@@ -75,3 +77,15 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index(
+  { userId: 1 },
+  {
+    unique: true,
+    sparse: true,
+  }
+);
+
+const User = mongoose.model("User", userSchema);
+module.exports = User;
+
