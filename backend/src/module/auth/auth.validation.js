@@ -1,7 +1,6 @@
 const { z } = require("zod");
 
 // Register
-
 const registerSchema = z.object({
 
     firstName: z
@@ -46,7 +45,6 @@ const loginSchema = z.object({
 
 
 // Verify OTP
-
 const verifyOTPSchema = z.object({
 
     email: z
@@ -61,24 +59,47 @@ const verifyOTPSchema = z.object({
 
 
 // Resend OTP
-
 const resendOTPSchema = z.object({
 
     email: z
         .string()
         .email("Invalid email format"),
-
 });
 
+
+// Forgot Password
+const forgotPasswordSchema = z.object({
+
+    email: z
+        .string()
+        .email("Invalid email format"),
+});
+
+// Reset Password
+const resetPasswordSchema = z.object({
+
+    email: z
+        .string()
+        .email("Invalid email format"),
+
+    otp: z
+        .string()
+        .length(6, "OTP must be 6 digits"),
+
+    newPassword: z
+        .string()
+        .min(
+            8,
+            "Password must be at least 8 characters"
+        )
+});
 
 module.exports = {
 
     registerSchema,
-
     loginSchema,
-
     verifyOTPSchema,
-
     resendOTPSchema,
-
+    forgotPasswordSchema,
+    resetPasswordSchema
 };

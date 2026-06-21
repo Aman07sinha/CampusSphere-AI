@@ -242,7 +242,6 @@ const loginUser = async (
 
 
     // Compare Password
-
     const isMatch = await bcrypt.compare(
 
         password,
@@ -328,6 +327,221 @@ const loginUser = async (
         }
 
     };
+};
+
+const forgotPassword = async (
+
+    email
+
+) => {
+
+    const user = await User.findOne({
+
+        email,
+
+    });
+
+
+    if (!user) {
+
+        throw new Error(
+
+            "User not found"
+
+        );
+
+    }
+
+
+    // Generate OTP
+
+    const otp = generateOTP();
+
+
+    // Hash OTP
+
+    const hashedOTP = await bcrypt.hash(
+
+        otp,
+
+        10
+
+    );
+
+
+    // Delete Old OTP
+
+    await OTPVerification.deleteMany({
+
+        email,
+
+    });
+
+
+    // Save OTP
+
+    await OTPVerification.create({
+
+        userId: user._id,
+
+        email,
+
+        otp: hashedOTP,
+
+        expiresAt: new Date(
+
+            Date.now() + 5 * 60 * 1000
+
+        ),
+
+    });
+
+
+    // Send Email
+
+    await sendEmail(
+
+        email,
+
+        "AI College ERP - Password Reset",
+
+        `Your OTP is ${otp}. Valid for 5 minutes.`
+
+    );
+
+
+    return {
+
+        success: true,
+
+        message:
+
+        "Password reset OTP sent successfully",
+
+    };
+};
+
+const resetPassword = async (
+
+    email,
+
+    otp,
+
+    newPassword
+
+) => {
+
+    const otpRecord =
+
+        await OTPVerification.findOne({
+
+            email,
+
+        });
+
+
+    if (!otpRecord) {
+
+        throw new Error(
+
+            "OTP not found"
+
+        );
+
+    }
+
+
+    if (
+
+        otpRecord.expiresAt < new Date()
+
+    ) {
+
+        throw new Error(
+
+            "OTP expired"
+
+        );
+
+    }
+
+
+    const isMatch = await bcrypt.compare(
+
+        otp,
+
+        otpRecord.otp
+
+    );
+
+
+    if (!isMatch) {
+
+        throw new Error(
+
+            "Invalid OTP"
+
+        );
+
+    }
+
+
+    const user = await User.findOne({
+
+        email,
+
+    });
+
+
+    const hashedPassword =
+
+        await bcrypt.hash(
+
+            newPassword,
+
+            10
+
+        );
+
+
+    user.password =
+
+        hashedPassword;
+
+
+    await user.save();
+
+
+    await OTPVerification.deleteMany({
+
+        email,
+
+    });
+
+
+    return {
+
+        success: true,
+
+        message:
+
+        "Password reset successful",
+
+    };
+
+};
+
+const logoutUser = async () => {
+
+    return {
+
+        success: true,
+
+        message:
+
+        "Logout successful",
+
+    };
 
 };
 
@@ -339,5 +553,8 @@ module.exports = {
     generateAdminId,
     registerUser,
     verifyOTP,
-    loginUser
+    loginUser,
+    forgotPassword, 
+    resetPassword,  
+    logoutUser, 
 };
