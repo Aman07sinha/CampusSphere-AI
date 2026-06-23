@@ -11,8 +11,7 @@ const generateStudentId = async () => {
     const counter = await Counter.findOneAndUpdate(
         { name: "student" },
         { $inc: { sequenceValue: 1 } },
-        {   new: true, upsert: true,
-        }
+        { new: true, upsert: true,}
     );
 
     const sequence = counter.sequenceValue
